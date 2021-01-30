@@ -1,4 +1,4 @@
-use bit_vec::BitVec;
+use bit_vec::{BitBlock, BitVec, Iter};
 use std::ops::Index;
 
 /// merged permutation of two sequence (as `A`, `B`)
@@ -6,10 +6,10 @@ use std::ops::Index;
 /// the permutation is stored as a bit vector with length `|A| + |B|`, 
 /// and there are `|A|` 0s and `|B|` 1s inside
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BinaryPermutation(pub BitVec);
+pub struct BinaryPermutation<B: BitBlock = u32>(pub BitVec<B>);
 
 /// forward Index<usize> for BitVec
-impl Index<usize> for BinaryPermutation {
+impl <B: BitBlock> Index<usize> for BinaryPermutation<B> {
     type Output = bool;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -17,12 +17,14 @@ impl Index<usize> for BinaryPermutation {
     }
 }
 
-impl BinaryPermutation {
+impl BinaryPermutation<u32> {
     /// construct an initial permutation of `|A|` 0s followed by `|B|` 1s
     pub fn new(zero_num: usize, one_num: usize) -> Self {
         Self(BitVec::from_fn(zero_num + one_num, |i| i >= zero_num))
     }
+}
 
+impl <B: BitBlock> BinaryPermutation<B> {
     /// forward BitVec::len()
     fn len(&self) -> usize {
         self.0.len()
@@ -48,7 +50,7 @@ impl BinaryPermutation {
     ///
     /// otherwise it will be set to the first permutation and return false
     ///
-    /// complexity: O(n)
+    /// complexity: `O(n)`
     pub fn next(&mut self) -> bool {
         if self.len() < 2 {
             return false;
@@ -78,16 +80,44 @@ impl BinaryPermutation {
     }
 
     /// apply the function `f` in the order of its own permutation to `left` or `right` iterator
+    ///
+    /// the second parameter of `f` is fed with `true` if `right` is iterated now, `false` otherwise
     pub fn process_iter<T, F>(&self, mut left: T, mut right: T, mut f: F) where
         T : Iterator,
-        F : FnMut(T::Item) -> () {
+        F : FnMut(T::Item, bool) -> () {
         for i in &self.0 {
             if let Some(x) = if i { &mut right } else { &mut left }.next() {
-                f(x);
+                f(x, i);
             } else {
                 break;
             }
         }
+    }
+
+    /// get an iterator of this permutation for two sequence
+    pub fn iter<'a, T: Iterator>(&'a self, left: T, right: T) -> BinPermIter<'a, B, T> {
+        BinPermIter {
+            perm_iter: self.0.iter(),
+            left,
+            right,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct BinPermIter<'a, B: 'a + BitBlock, T: Iterator> {
+    perm_iter: Iter<'a, B>,
+    left: T,
+    right: T,
+}
+
+impl <'a, B: BitBlock, T: Iterator> Iterator for BinPermIter<'a, B, T> {
+    type Item = T::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let x = self.perm_iter.next()?;
+
+        if x { &mut self.right } else { &mut self.left }.next()
     }
 }
 
@@ -119,6 +149,8 @@ macro_rules! bin_perm {
 
 #[cfg(test)]
 mod tests {
+    use std::vec;
+
     use super::*;
 
     #[test]
@@ -165,39 +197,57 @@ mod tests {
         let l = [1, 2];
         let r = [3, 4];
 
-        let mut seq = [1, 2, 3, 4].iter();
-        bp.process_iter(l.iter(), r.iter(), |i| {
-            assert_eq!(i, seq.next().unwrap());
-        });
+        let process_iter = |bp: &BinaryPermutation, seq: &[_]| {
+            let mut iter = seq.iter(); 
+            bp.process_iter(l.iter(), r.iter(), |i, _| {
+                assert_eq!(i, iter.next().unwrap());
+            })
+        };
+
+        process_iter(&bp, &[1, 2, 3, 4]);
 
         bp.next();
-        let mut seq = [1, 3, 2, 4].iter();
-        bp.process_iter(l.iter(), r.iter(), |i| {
-            assert_eq!(i, seq.next().unwrap());
-        });
+        process_iter(&bp, &[1, 3, 2, 4]);
 
         bp.next();
-        let mut seq = [1, 3, 4, 2].iter();
-        bp.process_iter(l.iter(), r.iter(), |i| {
-            assert_eq!(i, seq.next().unwrap());
-        });
+        process_iter(&bp, &[1, 3, 4, 2]);
 
         bp.next();
-        let mut seq = [3, 1, 2, 4].iter();
-        bp.process_iter(l.iter(), r.iter(), |i| {
-            assert_eq!(i, seq.next().unwrap());
-        });
+        process_iter(&bp, &[3, 1, 2, 4]);
 
         bp.next();
-        let mut seq = [3, 1, 4, 2].iter();
-        bp.process_iter(l.iter(), r.iter(), |i| {
-            assert_eq!(i, seq.next().unwrap());
-        });
+        process_iter(&bp, &[3, 1, 4, 2]);
 
         bp.next();
-        let mut seq = [3, 4, 1, 2].iter();
-        bp.process_iter(l.iter(), r.iter(), |i| {
-            assert_eq!(i, seq.next().unwrap());
-        });
+        process_iter(&bp, &[3, 4, 1, 2]);
+    }
+
+    #[test]
+    fn test_iter() {
+        let mut bp = BinaryPermutation::new(2, 2);
+
+        let l = [1, 2];
+        let r = [3, 4];
+
+        let to_collection = |bp: &BinaryPermutation| bp.iter(l.iter(), r.iter())
+            .map(|i| *i)
+            .collect::<Vec<_>>();
+
+        assert_eq!(to_collection(&bp), vec![1, 2, 3, 4]);
+
+        bp.next();
+        assert_eq!(to_collection(&bp), vec![1, 3, 2, 4]);
+
+        bp.next();
+        assert_eq!(to_collection(&bp), vec![1, 3, 4, 2]);
+
+        bp.next();
+        assert_eq!(to_collection(&bp), vec![3, 1, 2, 4]);
+
+        bp.next();
+        assert_eq!(to_collection(&bp), vec![3, 1, 4, 2]);
+
+        bp.next();
+        assert_eq!(to_collection(&bp), vec![3, 4, 1, 2]);
     }
 }
