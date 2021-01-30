@@ -1,4 +1,4 @@
-use std::{fs::File, io::{BufRead, BufReader, Cursor, Lines, Read, Result, Seek, SeekFrom}};
+use std::{fs::File, io::{BufRead, BufReader, Cursor, Lines, Read, Result, Seek, SeekFrom, Error}};
 
 use crate::permutation::{BinPermIter, BinaryPermutation};
 
@@ -59,5 +59,41 @@ impl <R: Read + TryClone + Seek> CoupleReader<R> {
         let right = Self::get_lines(&mut self.second)?;
 
         Ok(self.perm.iter(left, right))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_reader() -> Result<()> {
+        let a = Cursor::new(String::from("hello\nhi"));
+        let b = Cursor::new(String::from("once\r\ntwice\n"));
+
+        let mut reader = CoupleReader::new(a, b)?;
+
+        let to_collection = |r: &mut CoupleReader<_>| Ok::<_, Error>(
+            r.iter()?.map(|x| x.unwrap()).collect::<Vec<_>>()
+        );
+
+        assert_eq!(vec!["hello", "hi", "once", "twice"], to_collection(&mut reader)?);
+
+        reader.next();
+        assert_eq!(vec!["hello", "once", "hi", "twice"], to_collection(&mut reader)?);
+
+        reader.next();
+        assert_eq!(vec!["hello", "once", "twice", "hi"], to_collection(&mut reader)?);
+
+        reader.next();
+        assert_eq!(vec!["once", "hello", "hi", "twice"], to_collection(&mut reader)?);
+
+        reader.next();
+        assert_eq!(vec!["once", "hello", "twice", "hi"], to_collection(&mut reader)?);
+
+        reader.next();
+        assert_eq!(vec!["once", "twice", "hello", "hi"], to_collection(&mut reader)?);
+
+        Ok(())
     }
 }
