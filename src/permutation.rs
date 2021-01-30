@@ -95,7 +95,7 @@ impl <B: BitBlock> BinaryPermutation<B> {
     }
 
     /// get an iterator of this permutation for two sequence
-    pub fn iter<'a, T: Iterator>(&'a self, left: T, right: T) -> BinPermIter<'a, B, T> {
+    pub fn iter<'a, T: Iterator>(&'a self, left: T, right: T) -> BinPermIter<'a, T, B> {
         BinPermIter {
             perm_iter: self.0.iter(),
             left,
@@ -105,13 +105,13 @@ impl <B: BitBlock> BinaryPermutation<B> {
 }
 
 #[derive(Clone)]
-pub struct BinPermIter<'a, B: 'a + BitBlock, T: Iterator> {
+pub struct BinPermIter<'a, T: Iterator, B: 'a + BitBlock = u32> {
     perm_iter: Iter<'a, B>,
     left: T,
     right: T,
 }
 
-impl <'a, B: BitBlock, T: Iterator> Iterator for BinPermIter<'a, B, T> {
+impl <'a, T: Iterator, B: BitBlock> Iterator for BinPermIter<'a, T, B> {
     type Item = T::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
