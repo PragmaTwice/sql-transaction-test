@@ -1,4 +1,4 @@
-use std::{fs::File, io::{BufRead, BufReader, Read, Result, Seek, SeekFrom, Lines}};
+use std::{fs::File, io::{BufRead, BufReader, Cursor, Lines, Read, Result, Seek, SeekFrom}};
 
 use crate::permutation::{BinPermIter, BinaryPermutation};
 
@@ -20,8 +20,14 @@ impl TryClone for File {
     }
 }
 
+impl <T: Clone> TryClone for Cursor<T> {
+    fn try_clone(&self) -> Result<Self> {
+        Ok(self.clone())
+    }
+}
+
 impl <R: Read + TryClone + Seek> CoupleReader<R> {
-    /// construct a new CoupleReader with two readable object
+    /// construct a new CoupleReader with two readable objects
     pub fn new(mut first: R, mut second: R) -> Result<Self> {
         let first_len = Self::get_lines(&mut first)?.count();
         let second_len = Self::get_lines(&mut second)?.count();
@@ -42,10 +48,12 @@ impl <R: Read + TryClone + Seek> CoupleReader<R> {
         Ok(lines)
     }
 
+    /// forward BinaryPermutation::next
     pub fn next(&mut self) -> bool {
         self.perm.next()
     }
 
+    /// get an iterator of this permutation for two readable objects
     pub fn iter<'a>(&'a mut self) -> Result<BinPermIter<'a, Lines<BufReader<R>>>> {
         let left = Self::get_lines(&mut self.first)?;
         let right = Self::get_lines(&mut self.second)?;
