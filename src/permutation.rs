@@ -6,7 +6,7 @@ use std::ops::Index;
 /// the permutation is stored as a bit vector with length `|A| + |B|`, 
 /// and there are `|A|` 0s and `|B|` 1s inside
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BinaryPermutation(BitVec);
+pub struct BinaryPermutation(pub BitVec);
 
 /// forward Index<usize> for BitVec
 impl Index<usize> for BinaryPermutation {
@@ -78,13 +78,126 @@ impl BinaryPermutation {
     }
 
     /// apply the function `f` in the order of its own permutation to `left` or `right` iterator
-    pub fn process_iter<T, F>(&self, mut left: T, mut right: T, f: F) where
+    pub fn process_iter<T, F>(&self, mut left: T, mut right: T, mut f: F) where
         T : Iterator,
-        F : Fn(T::Item) -> () {
+        F : FnMut(T::Item) -> () {
         for i in &self.0 {
             if let Some(x) = if i { &mut right } else { &mut left }.next() {
                 f(x);
+            } else {
+                break;
             }
         }
+    }
+}
+
+trait ToBool {
+    fn to_bool(self) -> bool;
+}
+
+impl ToBool for bool {
+    fn to_bool(self) -> bool {
+        self
+    }
+}
+
+impl ToBool for i32 {
+    fn to_bool(self) -> bool {
+        self != 0
+    }
+}
+
+macro_rules! bin_perm {
+    [$($x:expr),*] => {{
+        let mut bv = BitVec::new();
+
+        $(bv.push($x.to_bool());)*
+
+        BinaryPermutation(bv)
+    }}
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_perm_next() {
+        let mut bp = BinaryPermutation::new(2, 3);
+
+        assert_eq!(bp, bin_perm![0, 0, 1, 1, 1]);
+
+        assert_eq!(bp.next(), true);
+        assert_eq!(bp, bin_perm![0, 1, 0, 1, 1]);
+
+        assert_eq!(bp.next(), true);
+        assert_eq!(bp, bin_perm![0, 1, 1, 0, 1]);
+
+        assert_eq!(bp.next(), true);
+        assert_eq!(bp, bin_perm![0, 1, 1, 1, 0]);
+
+        assert_eq!(bp.next(), true);
+        assert_eq!(bp, bin_perm![1, 0, 0, 1, 1]);
+
+        assert_eq!(bp.next(), true);
+        assert_eq!(bp, bin_perm![1, 0, 1, 0, 1]);
+
+        assert_eq!(bp.next(), true);
+        assert_eq!(bp, bin_perm![1, 0, 1, 1, 0]);
+
+        assert_eq!(bp.next(), true);
+        assert_eq!(bp, bin_perm![1, 1, 0, 0, 1]);
+
+        assert_eq!(bp.next(), true);
+        assert_eq!(bp, bin_perm![1, 1, 0, 1, 0]);
+
+        assert_eq!(bp.next(), true);
+        assert_eq!(bp, bin_perm![1, 1, 1, 0, 0]);
+
+        assert_eq!(bp.next(), false);
+        assert_eq!(bp, bin_perm![0, 0, 1, 1, 1]);
+    }
+
+    #[test]
+    fn test_process_iter() {
+        let mut bp = BinaryPermutation::new(2, 2);
+
+        let l = [1, 2];
+        let r = [3, 4];
+
+        let mut seq = [1, 2, 3, 4].iter();
+        bp.process_iter(l.iter(), r.iter(), |i| {
+            assert_eq!(i, seq.next().unwrap());
+        });
+
+        bp.next();
+        let mut seq = [1, 3, 2, 4].iter();
+        bp.process_iter(l.iter(), r.iter(), |i| {
+            assert_eq!(i, seq.next().unwrap());
+        });
+
+        bp.next();
+        let mut seq = [1, 3, 4, 2].iter();
+        bp.process_iter(l.iter(), r.iter(), |i| {
+            assert_eq!(i, seq.next().unwrap());
+        });
+
+        bp.next();
+        let mut seq = [3, 1, 2, 4].iter();
+        bp.process_iter(l.iter(), r.iter(), |i| {
+            assert_eq!(i, seq.next().unwrap());
+        });
+
+        bp.next();
+        let mut seq = [3, 1, 4, 2].iter();
+        bp.process_iter(l.iter(), r.iter(), |i| {
+            assert_eq!(i, seq.next().unwrap());
+        });
+
+        bp.next();
+        let mut seq = [3, 4, 1, 2].iter();
+        bp.process_iter(l.iter(), r.iter(), |i| {
+            assert_eq!(i, seq.next().unwrap());
+        });
     }
 }
