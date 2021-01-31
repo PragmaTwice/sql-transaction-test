@@ -4,7 +4,7 @@ use crate::permutation::{BinPermIter, BinaryPermutation};
 
 #[derive(Debug)]
 /// reading a couple of file and processing with various permutation
-struct CoupleReader<R = File> {
+pub struct CoupleReader<R = File> {
     /// the first IO object
     first: R,
 
