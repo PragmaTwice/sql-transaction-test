@@ -1,6 +1,7 @@
 use std::fs::File;
 use mysql::{Conn, Opts, Result, prelude::Queryable};
 use crate::reader::CoupleReader;
+use log::debug;
 
 /// connect database and forward conntent from reader
 pub struct DatabaseProcess {
@@ -32,7 +33,10 @@ impl DatabaseProcess {
         let mut iter = self.reader.iter()?;
 
         while let Some((res, x)) = iter.next() {
-            if x { &mut self.conns.0 } else { &mut self.conns.1 }.query_drop(res?)?;
+            let res = res?;
+
+            debug!("run SQL query '{}'", res);
+            if x { &mut self.conns.0 } else { &mut self.conns.1 }.query_drop(res)?;
         }
 
         Ok(())
