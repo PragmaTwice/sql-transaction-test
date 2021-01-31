@@ -8,7 +8,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+            components: llvm-tools-preview
       - uses: Swatinem/rust-cache@v1
+      - name: Set environment variables
+        run: echo "RUSTFLAGS=-Zinstrument-coverage" >> $GITHUB_ENV
       - name: Build
         run: cargo build --verbose
       - name: Run tests
@@ -21,6 +28,11 @@ jobs:
           EOF
       - name: Run example
         run: RUST_LOG=debug cargo run -- -u mysql://root@127.0.0.1:4000/test asset/a.sql asset/b.sql
+      - name: Generate coverage
+        run: |
+          curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
+          ./grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
+      - uses: codecov/codecov-action@v1
     
     services:
       tidb:
