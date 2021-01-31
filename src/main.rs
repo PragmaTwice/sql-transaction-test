@@ -1,6 +1,10 @@
+/// permutation generator and iterator
 mod permutation;
+/// IO reader of double files for iterating in any permutation
 mod reader;
+/// command-line options of this program
 mod options;
+/// database client for iteraing SQL statements from two files
 mod process;
 
 use clap::Clap;
