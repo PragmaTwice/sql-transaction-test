@@ -36,7 +36,7 @@ jobs:
       - name: Upload rustdoc
         run: |
           cargo doc --no-deps
-          npm install -g surge
+          sudo npm install -g surge
           surge ./target/doc/sql_transaction_test sql-transaction-test.surge.sh --token ${{ secrets.SURGE_TOKEN }}
     
     services:
