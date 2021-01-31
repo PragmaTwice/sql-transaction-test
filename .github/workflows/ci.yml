@@ -33,6 +33,11 @@ jobs:
           EOF
       - name: Run example
         run: RUST_LOG=debug cargo run -- -u mysql://root@127.0.0.1:4000/test asset/a.sql asset/b.sql
+      - name: Upload rustdoc
+        run: |
+          cargo doc --no-deps
+          npm install -g surge
+          surge ./target/doc/sql_transaction_test sql-transaction-test.surge.sh --token ${{ secrets.SURGE_TOKEN }}
     
     services:
       tidb:
