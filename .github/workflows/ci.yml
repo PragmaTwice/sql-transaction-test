@@ -35,9 +35,9 @@ jobs:
         run: RUST_LOG=debug cargo run -- -u mysql://root@127.0.0.1:4000/test asset/a.sql asset/b.sql
       - name: Upload rustdoc
         run: |
-          cargo doc --no-deps
+          cargo doc --no-deps --verbose
           sudo npm install -g surge
-          surge ./target/doc/sql_transaction_test sql-transaction-test.surge.sh --token ${{ secrets.SURGE_TOKEN }}
+          surge ./target/doc sql-transaction-test.surge.sh --token ${{ secrets.SURGE_TOKEN }}
     
     services:
       tidb:
