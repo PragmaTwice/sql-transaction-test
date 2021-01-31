@@ -124,6 +124,7 @@ impl <B: BitBlock> BinaryPermutation<B> {
     }
 }
 
+/// a merged iterator from two different iterator, iterating with a certain permutation
 #[derive(Clone)]
 pub struct BinPermIter<'a, T: Iterator, B: 'a + BitBlock = u32> {
     perm_iter: Iter<'a, B>,
@@ -143,6 +144,7 @@ impl <'a, T: Iterator, B: BitBlock> Iterator for BinPermIter<'a, T, B> {
     }
 }
 
+/// convert something to boolean value
 trait ToBool {
     fn to_bool(self) -> bool;
 }
