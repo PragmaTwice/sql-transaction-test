@@ -20,6 +20,11 @@ jobs:
         run: cargo build --verbose
       - name: Run tests
         run: cargo test --verbose
+      - name: Generate coverage
+        run: |
+          curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
+          ./grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
+      - uses: codecov/codecov-action@v1
       - name: Init database
         run: |
           mysql --host 127.0.0.1 --port 4000 -u root << EOF
@@ -28,11 +33,6 @@ jobs:
           EOF
       - name: Run example
         run: RUST_LOG=debug cargo run -- -u mysql://root@127.0.0.1:4000/test asset/a.sql asset/b.sql
-      - name: Generate coverage
-        run: |
-          curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
-          ./grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
-      - uses: codecov/codecov-action@v1
     
     services:
       tidb:
