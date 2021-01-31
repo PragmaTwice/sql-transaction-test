@@ -15,7 +15,7 @@ pub struct CoupleReader<R = File> {
     perm: BinaryPermutation,
 }
 
-trait TryClone {
+pub trait TryClone {
     fn try_clone(&self) -> Result<Self> where Self: Sized;
 }
 
