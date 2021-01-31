@@ -112,12 +112,14 @@ pub struct BinPermIter<'a, T: Iterator, B: 'a + BitBlock = u32> {
 }
 
 impl <'a, T: Iterator, B: BitBlock> Iterator for BinPermIter<'a, T, B> {
-    type Item = T::Item;
+    type Item = (T::Item, bool);
 
     fn next(&mut self) -> Option<Self::Item> {
         let x = self.perm_iter.next()?;
 
-        if x { &mut self.right } else { &mut self.left }.next()
+        if x { &mut self.right } else { &mut self.left }
+            .next()
+            .map(|y| (y, x))
     }
 }
 
@@ -230,7 +232,7 @@ mod tests {
         let r = [3, 4];
 
         let to_collection = |bp: &BinaryPermutation| bp.iter(l.iter(), r.iter())
-            .map(|i| *i)
+            .map(|i| *i.0)
             .collect::<Vec<_>>();
 
         assert_eq!(to_collection(&bp), vec![1, 2, 3, 4]);

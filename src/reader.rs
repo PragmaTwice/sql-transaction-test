@@ -5,8 +5,13 @@ use crate::permutation::{BinPermIter, BinaryPermutation};
 #[derive(Debug)]
 /// reading a couple of file and processing with various permutation
 struct CoupleReader<R = File> {
+    /// the first IO object
     first: R,
+
+    /// the second IO object
     second: R,
+
+    /// permutation transformer
     perm: BinaryPermutation,
 }
 
@@ -74,7 +79,7 @@ mod tests {
         let mut reader = CoupleReader::new(a, b)?;
 
         let to_collection = |r: &mut CoupleReader<_>| Ok::<_, Error>(
-            r.iter()?.map(|x| x.unwrap()).collect::<Vec<_>>()
+            r.iter()?.map(|x| x.0.unwrap()).collect::<Vec<_>>()
         );
 
         assert_eq!(vec!["hello", "hi", "once", "twice"], to_collection(&mut reader)?);
