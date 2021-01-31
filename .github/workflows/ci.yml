@@ -13,13 +13,13 @@ jobs:
         run: cargo build --verbose
       - name: Run tests
         run: cargo test --verbose
-      - name: init database
+      - name: Init database
         run: |
           mysql --host 127.0.0.1 --port 4000 -u root << EOF
           use test;
           create table X(id int, a int);
           EOF
-      - name: run example
+      - name: Run example
         run: RUST_LOG=debug cargo run -- -u mysql://root@127.0.0.1:4000/test asset/a.sql asset/b.sql
     
     services:
