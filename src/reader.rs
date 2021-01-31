@@ -8,8 +8,14 @@ pub struct CoupleReader<R = File> {
     /// the first IO object
     first: R,
 
+    /// line number of first object
+    first_len: usize,
+
     /// the second IO object
     second: R,
+
+    /// line number of second object
+    second_len: usize,
 
     /// permutation transformer
     perm: BinaryPermutation,
@@ -39,7 +45,9 @@ impl <R: Read + TryClone + Seek> CoupleReader<R> {
 
         Ok(Self {
             first,
+            first_len,
             second,
+            second_len,
             perm: BinaryPermutation::new(first_len, second_len),
         })
     }
@@ -56,6 +64,11 @@ impl <R: Read + TryClone + Seek> CoupleReader<R> {
     /// forward BinaryPermutation::next
     pub fn next(&mut self) -> bool {
         self.perm.next()
+    }
+
+    /// forward BinaryPermutation::count
+    pub fn count(&self) -> f64 {
+        BinaryPermutation::<u32>::count(self.first_len, self.second_len)
     }
 
     /// get an iterator of this permutation for two readable objects

@@ -1,5 +1,5 @@
 use bit_vec::{BitBlock, BitVec, Iter};
-use std::ops::Index;
+use std::{cmp::min, ops::Index};
 
 /// merged permutation of two sequence (as `A`, `B`)
 ///
@@ -50,7 +50,7 @@ impl <B: BitBlock> BinaryPermutation<B> {
     ///
     /// otherwise it will be set to the first permutation and return false
     ///
-    /// complexity: `O(n)`
+    /// complexity: `O(n)` where `n = lhs + rhs`
     pub fn next(&mut self) -> bool {
         if self.len() < 2 {
             return false;
@@ -77,6 +77,26 @@ impl <B: BitBlock> BinaryPermutation<B> {
         self.reverse(less + 1, self.len());
 
         true
+    }
+
+    /// returns $$C_{lhs + rhs}^{lhs}$$ (imprecise)
+    ///
+    /// complexity: `O(n)` where `n = lhs + rhs - min(lhs, rhs)`
+    pub fn count(lhs: usize, rhs: usize) -> f64 {
+        let n = lhs + rhs;
+        let m = min(lhs, rhs);
+
+        let mut res = 0f64;
+
+        for i in (m + 1)..(n + 1) {
+            res += (i as f64).ln();
+        }
+
+        for i in 1..(n - m + 1) {
+            res -= (i as f64).ln();
+        }
+
+        res.exp()
     }
 
     /// apply the function `f` in the order of its own permutation to `left` or `right` iterator
@@ -251,5 +271,17 @@ mod tests {
 
         bp.next();
         assert_eq!(to_collection(&bp), vec![3, 4, 1, 2]);
+    }
+
+    #[test]
+    fn test_count() {
+        assert_eq!(BinaryPermutation::<u32>::count(0, 0).round() as u128, 1);
+        assert_eq!(BinaryPermutation::<u32>::count(1, 0).round() as u128, 1);
+        assert_eq!(BinaryPermutation::<u32>::count(0, 1).round() as u128, 1);
+        assert_eq!(BinaryPermutation::<u32>::count(1, 1).round() as u128, 2);
+        assert_eq!(BinaryPermutation::<u32>::count(2, 2).round() as u128, 6);
+        assert_eq!(BinaryPermutation::<u32>::count(2, 3).round() as u128, 10);
+        assert_eq!(BinaryPermutation::<u32>::count(3, 3).round() as u128, 20);
+        assert_eq!(BinaryPermutation::<u32>::count(5, 5).round() as u128, 252);
     }
 }

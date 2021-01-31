@@ -23,9 +23,14 @@ impl DatabaseProcess {
         })
     }
 
-    /// forward CoupleReader::next()
+    /// forward CoupleReader::next
     pub fn next(&mut self) -> bool {
         self.reader.next()
+    }
+
+    /// forward CoupleReader::count
+    pub fn count(&self) -> f64 {
+        self.reader.count()
     }
 
     /// work on current permutation

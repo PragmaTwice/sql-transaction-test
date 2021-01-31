@@ -22,9 +22,11 @@ fn main() -> Result<()> {
     info!("connected to {}", options.url);
 
     let mut count = 0;
+    let total = db_process.count().round();
+
     while {
         count += 1;
-        info!("iterating on permutation {}", count);
+        info!("iterating on permutation {}/{}", count, total);
 
         db_process.work()?;
         db_process.next()
