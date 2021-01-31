@@ -18,7 +18,7 @@ jobs:
     
     services:
       tidb:
-        images: pingcap/tidb
+        image: pingcap/tidb
         ports:
           - 4000:4000
           - 10080:10080
