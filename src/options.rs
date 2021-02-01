@@ -1,3 +1,24 @@
+//! ## Manual Page
+//! ```shell
+//! $ ./sql-transaction-test --help
+//! sql-transaction-test 0.1.0
+//! PragmaTwice <i@twice.moe>
+//! test all merged permutation of SQL statements from two files
+//! 
+//! USAGE:
+//!     sql-transaction-test.exe --url <url> [input-path]...
+//! 
+//! ARGS:
+//!     <input-path>...    paths of two SQL files
+//! 
+//! FLAGS:
+//!     -h, --help       Prints help information
+//!     -V, --version    Prints version information
+//! 
+//! OPTIONS:
+//!     -u, --url <url>    URI of database server
+//! ```
+
 use clap::{Clap, crate_version, crate_authors};
 
 /// test all merged permutation of SQL statements from two files

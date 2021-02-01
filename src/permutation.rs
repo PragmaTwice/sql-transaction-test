@@ -1,3 +1,39 @@
+//! ## Usage
+//! `BinaryPermutation` stores a sequence of bits, 
+//! where 0s and 1s in the sequence indicate whether the current position 
+//! should iterate over the first or second iteratable object, respectively.
+//! 
+//! `BinaryPermutation::next` transforms the current permutation into the next one, 
+//! while `BinaryPermutation::iter` generates a new iterator of type `BinPermIter` 
+//! that iterates over the two iterators in the order of the current permutation.
+//!
+//! For example:
+//! ```rust
+//! let mut bp = BinaryPermutation::new(2, 3); // the first permutation `00111` is stored in `bp`
+//! 
+//! let left = ['a', 'b'];
+//! let right = ['1', '2', '3'];
+//! 
+//! bp.iter(left.iter(), right.iter()).collect::<Vec<_>>(); // equals `ab123`
+//! 
+//! bp.next(); // permutation is transformed to `01011`
+//! bp.iter(left.iter(), right.iter()).collect::<Vec<_>>(); // equals `a1b23`
+//! 
+//! bp.next(); // permutation is transformed to `01101`
+//! bp.iter(left.iter(), right.iter()).collect::<Vec<_>>(); // equals `a12b3`
+//! 
+//! bp.next(); // permutation is transformed to `01110`
+//! bp.iter(left.iter(), right.iter()).collect::<Vec<_>>(); // equals `a123b`
+//! 
+//! // ... more (5 permutations are omitted)
+//! 
+//! bp.next(); // permutation is transformed to `11100` (last permutation)
+//! bp.iter(left.iter(), right.iter()).collect::<Vec<_>>(); // equals `123ab`
+//! 
+//! bp.next(); // permutation is transformed to `00111`, `false` is returned
+//! bp.iter(left.iter(), right.iter()).collect::<Vec<_>>(); // equals `ab123`
+//! ```
+
 use bit_vec::{BitBlock, BitVec, Iter};
 use std::{cmp::min, ops::Index};
 

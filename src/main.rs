@@ -1,3 +1,20 @@
+//! ## Quick Start
+//! 
+//! ```shell
+//! $ RUST_LOG=debug cargo run -- -u mysql://username:password@host:port/db-name asset/a.sql asset/b.sql 
+//! ```
+//! You can check the result of this command in step "Run example" from the latest workflow run of [Actions](https://github.com/PragmaTwice/sql-transaction-test/actions?query=workflow%3ABuildAndTest), where a TiDB service was pulled up in CI for testing.
+//! 
+//! ## Functions
+//! The two SQL files will be split by rows, trying the case where they are all crossed while keeping the internal order of each file unchanged. 
+//! 
+//! The sequence of SQL statements under each alignment will be submitted to the server.
+//! 
+//! ## Features
+//! - permutation calculation by bit vector
+//! - data traversing with iterator patterns
+//! - unit testing and real-world simulation in CI
+
 /// permutation generator and iterator
 mod permutation;
 /// IO reader of double files for iterating in any permutation
@@ -13,6 +30,7 @@ use mysql::Result;
 use process::DatabaseProcess;
 use log::info;
 
+#[doc(hidden)]
 fn main() -> Result<()> {
     let options: Options = Options::parse();
 
@@ -25,7 +43,7 @@ fn main() -> Result<()> {
 
     info!("connected to {}", options.url);
 
-    let mut count = 0;
+    let mut count = 0u128;
     let total = db_process.count().round();
 
     while {
