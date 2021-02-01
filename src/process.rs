@@ -1,3 +1,8 @@
+//! ## Usage
+//! `DatabaseProcess` encapsulates two database connections and a CoupleReader, 
+//! which will simulate two database clients reading SQL files by line and 
+//! submitting SQL statements to the server in each specific order.
+
 use std::fs::File;
 use mysql::{Conn, Opts, Result, prelude::Queryable};
 use crate::reader::CoupleReader;

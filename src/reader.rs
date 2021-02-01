@@ -1,3 +1,25 @@
+//! ## Usage
+//! `CoupleReader` encapsulates two IO objects and a `BinaryPermutation`, 
+//! each IO object will iterate through the newlines in the order specified by `BinaryPermutation`.
+//! 
+//! For example:
+//! ```rust
+//! let a = Cursor::new("hello\nhi");
+//! let b = Cursor::new("a\r\nb\n");
+//!
+//! let mut reader = CoupleReader::new(a, b)?;
+//! 
+//! reader.iter()?.collect::<Vec<_>>(); // equals [hello, hi, a, b]
+//!
+//! reader.next();
+//! reader.iter()?.collect::<Vec<_>>(); // equals [hello, a, hi, b]
+//!
+//! reader.next();
+//! reader.iter()?.collect::<Vec<_>>(); // equals [hello, a, b, hi]
+//!
+//! // ... more (3 permutations are omitted)
+//! ```
+
 use std::{fs::File, io::{BufRead, BufReader, Cursor, Lines, Read, Result, Seek, SeekFrom, Error}};
 
 use crate::permutation::{BinPermIter, BinaryPermutation};
@@ -87,8 +109,8 @@ mod tests {
 
     #[test]
     fn test_reader() -> Result<()> {
-        let a = Cursor::new(String::from("hello\nhi"));
-        let b = Cursor::new(String::from("once\r\ntwice\n"));
+        let a = Cursor::new("hello\nhi");
+        let b = Cursor::new("once\r\ntwice\n");
 
         let mut reader = CoupleReader::new(a, b)?;
 
