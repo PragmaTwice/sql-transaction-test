@@ -15,9 +15,9 @@ $ RUST_LOG=debug cargo run -- -u mysql://username:password@host:port/db-name ass
 You can check the result of this command in step "Run example" from the latest workflow run of [Actions](https://github.com/PragmaTwice/sql-transaction-test/actions?query=workflow%3ABuildAndTest), where a TiDB service was pulled up in CI for testing.
 
 ## Functions
-The two SQL files will be split by rows, trying the case where they are all crossed while keeping the internal order of each file unchanged. 
+The two SQL files will be split by newlines, trying all cases where they are cross-permutated while keeping the internal order of each file unchanged. 
 
-The sequence of SQL statements under each alignment will be submitted to the server.
+The sequence of SQL statements under each permutation will be submitted to the server.
 
 ## Features
 - permutation calculation by bit vector
